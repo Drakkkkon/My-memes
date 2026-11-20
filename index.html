@@ -24,8 +24,15 @@
       <button class="subtab" data-sub="classic">Классика</button>
       <button class="subtab" data-sub="fav">Избранное</button>
     </div>
+    <div id="cats" class="cats">
+      <div class="cats-title">Знаменитости</div>
+      <div class="cats-row" id="cats-people"></div>
+      <div class="cats-title">Категории</div>
+      <div class="cats-row" id="cats-topics"></div>
+    </div>
     <div class="searchbar">
-      <input id="search" type="search" placeholder="Поиск мема (названия на английском)…" autocomplete="off">
+      <input id="search" type="search" placeholder="Поиск мема (по-русски или по-английски)…" autocomplete="off">
+      <button class="btn small" id="refresh" title="Свежие мемы">↻</button>
       <label class="btn small" title="Своя картинка">📷 Своя<input id="upload" type="file" accept="image/*" hidden></label>
     </div>
     <div id="count" class="count"></div>
@@ -36,6 +43,8 @@
     </div>
     <div id="grid" class="grid"></div>
     <div id="empty" class="empty hidden"></div>
+    <div id="loader" class="loader hidden"><span class="spin"></span> Загружаю мемы…</div>
+    <div id="sentinel"></div>
   </section>
 
   <!-- ===== Страница 2: Редактор ===== -->
@@ -143,11 +152,30 @@
       <button class="btn hidden" id="share-jpg">↗ Поделиться</button>
     </div>
   </section>
+  <!-- ===== Страница 3: Настройки ===== -->
+  <section id="page-settings" class="page">
+    <div class="panel">
+      <h3 class="block-title">Базы мемов</h3>
+      <div class="hint">Можно выбрать одну или несколько баз. Мемы из выбранных баз перемешиваются в одной ленте.</div>
+      <div id="src-list" class="src-list"></div>
+    </div>
+    <div class="panel">
+      <h3 class="block-title">Кеш на устройстве</h3>
+      <div class="hint">Пролистанные мемы и картинки сохраняются в памяти телефона — открываются быстро и без интернета.</div>
+      <div id="cache-info" class="cache-info">…</div>
+      <div class="row chips">
+        <button class="chip" id="clear-feeds">Очистить списки мемов</button>
+        <button class="chip danger" id="clear-imgs">Очистить картинки</button>
+      </div>
+    </div>
+    <div class="panel hint" id="about"></div>
+  </section>
 </main>
 
 <nav class="bottom">
   <button class="nav active" data-page="memes">🖼<span>Мемы</span></button>
   <button class="nav" data-page="editor">✏️<span>Редактор</span></button>
+  <button class="nav" data-page="settings">⚙️<span>Настройки</span></button>
 </nav>
 
 <div id="viewer" class="modal hidden">
@@ -161,9 +189,29 @@
     </div>
   </div>
 </div>
+<div id="pv" class="modal pv hidden">
+  <div class="pv-top">
+    <span id="pv-count"></span>
+    <button class="pv-x" id="pv-close" title="Закрыть">✕</button>
+  </div>
+  <div class="pv-stage" id="pv-stage">
+    <button class="pv-arrow left" id="pv-prev">‹</button>
+    <img id="pv-img" alt="">
+    <button class="pv-arrow right" id="pv-next">›</button>
+  </div>
+  <div class="pv-info"><div id="pv-name"></div><div id="pv-src" class="pv-src"></div></div>
+  <div class="row chips center">
+    <button class="chip on" id="pv-edit">✏️ В редактор</button>
+    <button class="chip" id="pv-fav">♥ Избранное</button>
+    <button class="chip" id="pv-dl">⬇ Скачать</button>
+    <a class="chip" id="pv-link" target="_blank" rel="noopener">↗ Источник</a>
+  </div>
+</div>
 <div id="toast" class="toast"></div>
 
 <script src="js/db.js"></script>
+<script src="js/sources.js"></script>
+<script src="js/feed.js"></script>
 <script src="js/editor.js"></script>
 <script src="js/app.js"></script>
 </body>
