@@ -1,5 +1,5 @@
 // Мое_мемы — главная логика
-const VERSION = '0.2.0 альфа';
+const VERSION = '0.3.0 альфа';
 const App = (() => {
   const $ = id => document.getElementById(id);
   let catalog = { new: [], classic: [] };
@@ -218,7 +218,7 @@ const App = (() => {
     $('pv-name').textContent = t.name;
     $('pv-src').textContent = srcName(t.src) || 'Избранное';
     $('pv-fav').classList.toggle('on', Favs.has(t.id));
-    const a = $('pv-link'); a.classList.toggle('hidden', !t.link); if (t.link) a.href = t.link;
+    const a = $('pv-link'); const web = /^https?:\/\//i.test(t.link || ''); a.classList.toggle('hidden', !web); if (web) a.href = t.link;
     pvUpdate();
     // заранее грузим следующие картинки (они попадают в кеш)
     for (let k = 1; k <= 3; k++) { const n = shown[pvIdx + k]; if (n) { const p = new Image(); p.crossOrigin = 'anonymous'; p.src = Sources.view(n.url); } }
@@ -270,7 +270,7 @@ const App = (() => {
     if (!blob) { toast('Не получилось скачать — открой «Источник»'); return; }
     const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg');
     download(blob, 'meme_' + Date.now() + '.' + ext);
-    toast('Картинка скачана в «Загрузки»');
+    if (!window.MMApp) toast('Картинка скачана в «Загрузки»');
   };
 
   // ---------- настройки ----------
@@ -333,7 +333,14 @@ const App = (() => {
     const d = new Date(), p = n => String(n).padStart(2, '0');
     return 'meme_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '_' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.jpg';
   }
+  // в приложении Android файлы передаются в него: обычное скачивание там не работает
+  function toApp(method, blob, name) {
+    const r = new FileReader();
+    r.onload = () => window.MMApp[method](name, String(r.result).split(',')[1], blob.type || 'image/jpeg');
+    r.readAsDataURL(blob);
+  }
   function download(blob, name) {
+    if (window.MMApp) { toApp('saveImage', blob, name); return; }
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
@@ -359,9 +366,15 @@ const App = (() => {
     if (!Editor.hasContent()) { toast('Пустой холст'); return; }
     const blob = await getJpeg();
     download(blob, fileName());
-    toast('JPEG скачан в «Загрузки»');
+    if (!window.MMApp) toast('JPEG скачан в «Загрузки»');
   };
-  if (navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'], { type: 'image/jpeg' })], 'a.jpg', { type: 'image/jpeg' })] })) {
+  if (window.MMApp) {
+    $('share-jpg').classList.remove('hidden');
+    $('share-jpg').onclick = async () => {
+      if (!Editor.hasContent()) { toast('Пустой холст'); return; }
+      toApp('shareImage', await getJpeg(), fileName());
+    };
+  } else if (navigator.canShare && navigator.canShare({ files: [new File([new Blob(['x'], { type: 'image/jpeg' })], 'a.jpg', { type: 'image/jpeg' })] })) {
     $('share-jpg').classList.remove('hidden');
     $('share-jpg').onclick = async () => {
       const blob = await getJpeg();
@@ -381,7 +394,7 @@ const App = (() => {
   function closeViewer() { $('viewer').classList.add('hidden'); viewing = null; }
   $('v-close').onclick = closeViewer;
   $('viewer').onclick = e => { if (e.target.id === 'viewer') closeViewer(); };
-  $('v-dl').onclick = () => { if (viewing) { download(viewing.blob, fileName()); toast('JPEG скачан'); } };
+  $('v-dl').onclick = () => { if (viewing) { download(viewing.blob, fileName()); if (!window.MMApp) toast('JPEG скачан'); } };
   $('v-del').onclick = async () => {
     if (!viewing || !confirm('Удалить этот мем из базы сайта?')) return;
     await DB.del(viewing.id); closeViewer(); renderGrid(); toast('Удалено');

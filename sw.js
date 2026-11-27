@@ -1,8 +1,8 @@
 // Мое_мемы — service worker: кеш сайта и картинок мемов на устройстве
-const APP = 'mm-app-0.2.0';
+const APP = 'mm-app-0.3.0';
 const IMG = 'mm-img-v1';
 const MAX_IMG = 3000;
-const SHELL = ['./', 'index.html', 'css/style.css', 'js/db.js', 'js/sources.js', 'js/feed.js', 'js/editor.js', 'js/app.js', 'data/catalog.json'];
+const SHELL = ['./', 'index.html', 'css/style.css', 'js/db.js', 'js/sources.js', 'js/feed.js', 'js/editor.js', 'js/app.js', 'js/android.js', 'data/catalog.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(APP).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
